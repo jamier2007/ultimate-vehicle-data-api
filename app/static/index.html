@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UK Vehicle Lookup</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --radius: 0.75rem;
+            --shadow: 0 2px 8px 0 rgb(37 99 235 / 0.07);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        header {
+            text-align: center;
+            padding: 2.5rem 1rem 1.5rem 1rem;
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+        .logo {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -1px;
+            margin-bottom: 0.25rem;
+        }
+        .subtitle {
+            font-size: 1rem;
+            color: var(--text-light);
+            margin-bottom: 1.5rem;
+        }
+        .search-container {
+            background: var(--surface);
+            padding: 1.5rem 1rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+        .search-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        label {
+            font-weight: 500;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+        input {
+            padding: 0.85rem 1rem;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 1.1rem;
+            background: var(--surface);
+            color: var(--text);
+            transition: border 0.2s, box-shadow 0.2s;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.13);
+        }
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            border-radius: var(--radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 1px 2px 0 rgb(37 99 235 / 0.07);
+        }
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .result-container {
+            background: var(--surface);
+            padding: 1.5rem 1rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            display: none;
+        }
+        .result-container.active {
+            display: block;
+        }
+        .vehicle-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+        .info-group {
+            background: var(--background);
+            border-radius: var(--radius);
+            box-shadow: 0 1px 3px 0 rgb(37 99 235 / 0.04);
+            padding: 1rem 1rem 0.5rem 1rem;
+        }
+        .info-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .info-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem 1rem;
+        }
+        .info-field {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0.5rem;
+        }
+        .info-label {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+        .info-value {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+        details {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .advisory {
+            color: var(--danger);
+            font-size: 0.98rem;
+            margin-top: 0.3rem;
+        }
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            padding: 1rem;
+            border-radius: var(--radius);
+            border-left: 4px solid var(--danger);
+            margin-top: 1rem;
+            display: none;
+            font-size: 0.95rem;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        .loading-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--background);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        .loading-bar-inner {
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            animation: loading-bar 1.2s infinite linear;
+        }
+        @keyframes loading-bar {
+            0% { width: 0; }
+            50% { width: 80%; }
+            100% { width: 0; }
+        }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1.2rem 0 0.5rem 0;
+            color: var(--text-light);
+            font-size: 0.95rem;
+            border-top: 1px solid var(--border);
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 0.5rem;
+            }
+            .info-fields {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">UK Vehicle Lookup</div>
+            <div class="subtitle">Enter a UK registration number to get vehicle details</div>
+        </header>
+        <div class="search-container">
+            <form class="search-form" id="lookupForm">
+                <div class="form-group">
+                    <label for="vrm">Registration Number (VRM)</label>
+                    <input 
+                        type="text" 
+                        id="vrm" 
+                        name="vrm" 
+                        placeholder="e.g. AB12CDE" 
+                        required 
+                        pattern="^[A-Za-z0-9]{1,7}$"
+                        title="Enter a valid UK registration number (no spaces)"
+                        autocomplete="off"
+                        autocapitalize="characters"
+                    >
+                    <div class="error-message" id="formError">Please enter a valid UK registration number</div>
+                </div>
+                <button type="submit">🔍 Look Up Vehicle</button>
+            </form>
+        </div>
+        <div class="loading" id="loading">
+            <div class="loading-bar"><div class="loading-bar-inner" id="loadingBar"></div></div>
+            <p>Looking up vehicle information...</p>
+        </div>
+        <div class="result-container" id="resultContainer">
+            <h2 class="info-title" style="margin-bottom:1rem;">Vehicle Details</h2>
+            <div class="error-message" id="apiError">
+                Sorry, we couldn't find information for this registration number.
+            </div>
+            <div class="vehicle-info" id="vehicleInfo"></div>
+        </div>
+    </div>
+    <footer>
+        &copy; 2025 UK Vehicle Lookup
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('lookupForm');
+            const loading = document.getElementById('loading');
+            const loadingBar = document.getElementById('loadingBar');
+            const resultContainer = document.getElementById('resultContainer');
+            const vehicleInfo = document.getElementById('vehicleInfo');
+            const formError = document.getElementById('formError');
+            const apiError = document.getElementById('apiError');
+            const vrmInput = document.getElementById('vrm');
+            vrmInput.addEventListener('focus', function() {
+                if (window.innerWidth <= 768) {
+                    setTimeout(() => {
+                        this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
+                }
+            });
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                formError.style.display = 'none';
+                apiError.style.display = 'none';
+                resultContainer.classList.remove('active');
+                vehicleInfo.innerHTML = '';
+                const vrm = vrmInput.value.trim().toUpperCase();
+                if (!vrm.match(/^[A-Z0-9]{1,7}$/)) {
+                    formError.style.display = 'block';
+                    return;
+                }
+                vrmInput.blur();
+                loading.style.display = 'block';
+                loadingBar.style.width = '0';
+                setTimeout(() => { loadingBar.style.width = '80%'; }, 100);
+                try {
+                    const response = await fetch(`/${vrm}`);
+                    loading.style.display = 'none';
+                    if (!response.ok) {
+                        apiError.style.display = 'block';
+                        resultContainer.classList.add('active');
+                        return;
+                    }
+                    const text = await response.text();
+                    const lines = text.split('\n');
+                    vehicleInfo.innerHTML = '';
+                    // Group fields
+                    const fieldGroups = [
+                        {
+                            title: 'Basic Info',
+                            icon: '🛻',
+                            fields: ['Registration Number', 'VRM', 'Make', 'Model', 'Range', 'Colour', 'Mileage', 'MotDue', 'Gearbox', 'Fuel Type', 'VehicleClass']
+                        },
+                        {
+                            title: 'Performance',
+                            icon: '⚡',
+                            fields: ['EngineSizeCC', 'Performance', 'EuroStatus', 'KerbWeight', 'GrossVehicleWeight', 'TransmissionCode']
+                        },
+                        {
+                            title: 'History',
+                            icon: '📜',
+                            fields: ['History', 'PreviousOwners', 'RegisteredOn', 'TaxData', 'RepairQuotes']
+                        },
+                        {
+                            title: 'MOT',
+                            icon: '📅',
+                            fields: ['MotDue', 'IsMot', 'IsClass7Mot', 'IsElectric']
+                        },
+                        {
+                            title: 'Advisories',
+                            icon: '🛠️',
+                            fields: ['Advisories']
+                        }
+                    ];
+                    // Parse lines into key-value
+                    const data = {};
+                    lines.forEach(line => {
+                        const parts = line.split(': ');
+                        if (parts.length >= 2) {
+                            const key = parts[0];
+                            const value = parts.slice(1).join(': ');
+                            if (value && value !== 'null' && value !== '0' && value !== 'undefined') {
+                                data[key] = value;
+                            }
+                        }
+                    });
+                    // Always show VRM as Registration Number
+                    data['Registration Number'] = vrm;
+                    // Render groups
+                    fieldGroups.forEach(group => {
+                        let hasContent = false;
+                        let groupFields = '';
+                        group.fields.forEach(field => {
+                            if (data[field]) {
+                                hasContent = true;
+                                let value = data[field];
+                                let label = field;
+                                // Custom display names
+                                if (field === 'MotDue') label = 'MOT Due';
+                                if (field === 'IsMot') label = 'MOT Present';
+                                if (field === 'IsElectric') label = 'Electric';
+                                if (field === 'VehicleClass') label = 'Vehicle Class';
+                                if (field === 'EngineSizeCC') label = 'Engine Size (CC)';
+                                if (field === 'EuroStatus') label = 'Euro Status';
+                                if (field === 'KerbWeight') label = 'Kerb Weight';
+                                if (field === 'GrossVehicleWeight') label = 'Gross Weight';
+                                if (field === 'TransmissionCode') label = 'Transmission Code';
+                                if (field === 'PreviousOwners') label = 'Previous Owners';
+                                if (field === 'RegisteredOn') label = 'Registered On';
+                                if (field === 'TaxData') label = 'Tax Data';
+                                if (field === 'RepairQuotes') label = 'Repair Quotes';
+                                if (field === 'Performance') label = 'Performance';
+                                if (field === 'Advisories') label = 'Advisories';
+                                // Render advisories as red
+                                if (field === 'Advisories') {
+                                    groupFields += `<div class="info-field advisory"><span class="info-label">${label}</span><span class="info-value">${value}</span></div>`;
+                                } else {
+                                    groupFields += `<div class="info-field"><span class="info-label">${label}</span><span class="info-value">${value}</span></div>`;
+                                }
+                            }
+                        });
+                        if (hasContent) {
+                            // Use details/summary for advisories and history
+                            if (group.title === 'Advisories' || group.title === 'History') {
+                                vehicleInfo.innerHTML += `
+                                    <details class="info-group">
+                                        <summary class="info-title">${group.icon} ${group.title}</summary>
+                                        <div class="info-fields">${groupFields}</div>
+                                    </details>
+                                `;
+                            } else {
+                                vehicleInfo.innerHTML += `
+                                    <div class="info-group">
+                                        <div class="info-title">${group.icon} ${group.title}</div>
+                                        <div class="info-fields">${groupFields}</div>
+                                    </div>
+                                `;
+                            }
+                        }
+                    });
+                    resultContainer.classList.add('active');
+                    if (window.innerWidth <= 768) {
+                        setTimeout(() => {
+                            resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 100);
+                    }
+                } catch (error) {
+                    loading.style.display = 'none';
+                    apiError.style.display = 'block';
+                    resultContainer.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
