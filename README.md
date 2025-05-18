@@ -1,61 +1,69 @@
-# UK Vehicle Data API – Docker deployment
+UK Vehicle Data API – Docker deployment
 
-This repo packages the async FastAPI service in a slim, multi‑stage
-Docker image.
+This repository packages the async FastAPI service in a slim, multi-stage Docker image.
 
-## Features
+Features
+	•	Fast, asynchronous vehicle-data lookup by UK registration mark (VRM)
+	•	Clean, modern web interface for easy access
+	•	In-memory cache layer for repeated look-ups
+	•	Fully-typed JSON API for programme-matic access
+	•	Permissive CORS policy – the service accepts requests from any origin (see below)
+	•	Container-ready deployment for local testing or production
 
-- Fast, async vehicle data lookup by UK registration mark (VRM)
-- Clean, modern web interface for easy access
-- Cache layer for repeated lookups
-- JSON API for programmatic access
-- Containerized deployment ready
+CORS policy
 
-## Build the image
+The service starts with the CORSMiddleware enabled and configured as follows:
 
-```bash
+Setting	Value	Meaning
+allow_origins	["*"]	Accept requests from every origin
+allow_methods	"*"	Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
+allow_headers	"*"	Allow any custom or standard headers
+allow_credentials	True	Cookies, authorisation headers, and TLS client certificates are forwarded
+
+No further configuration is required: as soon as the container is running, any website, SPA, or mobile app can call the API without cross-origin errors.
+
+Need stricter rules?
+Edit app.vehicle_service.py and replace the wildcard ("*" ) entries with explicit lists of allowed origins, methods, or headers.
+
+Build the image
+
 docker build -t vehicle-service:latest .
-```
 
-## Run the API and Web Interface
+Run the API and web interface
 
-```bash
 docker run -p 5001:5001 --name vehicle-api vehicle-service
-```
 
 The service will be available at:
-- Web Interface: http://localhost:5001/
-- API Docs: http://localhost:5001/docs
+	•	Web interface: http://localhost:5001/
+	•	Interactive API docs (Swagger UI): http://localhost:5001/docs
 
-## API Usage
+Because the CORS policy is wide open, you can also invoke the API from any other origin—for example, a React or Vue development server on http://localhost:3000.
 
-### Web Interface
+API usage
 
-Visit http://localhost:5001/ in your browser to use the user-friendly lookup form.
+Web interface
 
-### API Endpoints
+Open http://localhost:5001/ in your browser and enter a registration mark in the form.
 
-1. **Vehicle Lookup**
-   ```
-   GET /{vrm}
-   ```
-   Example: `GET /AB12CDE`
+API endpoints
 
-## Development
+Purpose	Method & path	Example
+Vehicle look-up	GET /{vrm}	GET /AB12CDE
 
-### Local Development
+Responses are returned as plain text (key : value pairs) for simplicity; you can request JSON by parsing the text or adapting the source.
 
-```bash
+Development
+
+Local development
+
 # Install dependencies
 pip install -r requirements.txt
 
 # Run with auto-reload
 uvicorn app.vehicle_service:app --reload --port 5001
-```
 
-### Project Structure
+Project structure
 
-```
 .
 ├── app/
 │   ├── __init__.py
