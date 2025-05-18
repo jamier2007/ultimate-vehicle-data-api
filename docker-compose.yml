@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  vehicle-api:
+    build: .
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./app:/app/app
+    restart: unless-stopped 

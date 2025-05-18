@@ -130,10 +130,12 @@ async def _fetch_html(vrm: str) -> str:
         try:
             r = await http_client.get(url)
             r.raise_for_status()
-            logger.debug("Response status: %d", r.status_code)
-            logger.debug("Response headers: %s", dict(r.headers))
-            logger.debug("Response content length: %d", len(r.text))
-            logger.debug("Response content preview: %s", r.text[:500])
+            logger.info("Response status: %d", r.status_code)
+            logger.info("Response headers: %s", dict(r.headers))
+            logger.info("Response content length: %d", len(r.text))
+            # Save the raw HTML to a file for inspection
+            with open(f"debug_{vrm}.html", "w") as f:
+                f.write(r.text)
             return r.text
         except (httpx.TimeoutException, httpx.TransportError) as exc:
             last_exc = exc
@@ -281,7 +283,14 @@ async def lookup(
     logger.info("Lookup: %s", vrm)
     try:
         info = await get_vehicle_info(vrm)
-        lines = [f"{k}: {v}" for k, v in info.items()]
+        # Transform the data to rename Milage to Last Mot Mileage
+        transformed_info = {}
+        for k, v in info.items():
+            if k == "Milage":
+                transformed_info["Last Mot Mileage"] = v
+            else:
+                transformed_info[k] = v
+        lines = [f"{k}: {v}" for k, v in transformed_info.items()]
         return Response("\n".join(lines), media_type="text/plain")
     except HTTPException as e:
         if debug:
