@@ -1,5 +1,5 @@
 """
-UK Vehicle Data micro‑service (async, cached, typed).
+UK Vehicle Data micro-service (async, cached, typed).
 
 Run locally for testing:
     uvicorn app.vehicle_service:app --reload --port 5001
@@ -20,6 +20,7 @@ from cachetools import TTLCache, cached
 from fastapi import FastAPI, HTTPException, Path, Query, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.middleware.cors import CORSMiddleware   # ← NEW
 from pydantic import BaseModel, Field
 import ast
 
@@ -37,7 +38,7 @@ USER_AGENT = os.getenv(
 )
 TIMEOUT = float(os.getenv("HTTP_TIMEOUT", "10"))
 RETRY_ATTEMPTS = int(os.getenv("HTTP_RETRIES", "3"))
-CACHE_TTL = int(os.getenv("CACHE_TTL", 86_400))        # 24 h
+CACHE_TTL = int(os.getenv("CACHE_TTL", 86_400))        # 24 h
 CACHE_MAXSIZE = int(os.getenv("CACHE_MAXSIZE", "5000"))
 
 VRM_RE = re.compile(r"^[A-Za-z0-9]{1,7}$")
@@ -56,6 +57,16 @@ app = FastAPI(
     version="2.0.0",
     description="Look up basic vehicle data by UK registration mark (VRM).",
 )
+
+# ---- CORS: allow anything, anywhere --------------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],      # ← any origin
+    allow_credentials=True,
+    allow_methods=["*"],      # ← any HTTP method
+    allow_headers=["*"],      # ← any headers
+)
+# --------------------------------------------------------------------
 
 # Set up static files directory
 static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
