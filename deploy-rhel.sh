@@ -6,7 +6,17 @@ set -e
 # Update system and install dependencies
 echo "Updating system and installing dependencies..."
 dnf update -y
-dnf install -y docker docker-compose git nginx
+dnf install -y git nginx curl
+
+# Install Docker
+echo "Installing Docker..."
+dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
+
+# Install Docker Compose
+echo "Installing Docker Compose..."
+curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
 
 # Start and enable Docker
 echo "Starting Docker service..."
@@ -26,7 +36,7 @@ fi
 
 # Build and start the container
 echo "Building and starting the container..."
-docker-compose up -d --build
+/usr/local/bin/docker-compose up -d --build
 
 # Set up Nginx as reverse proxy
 echo "Setting up Nginx..."
