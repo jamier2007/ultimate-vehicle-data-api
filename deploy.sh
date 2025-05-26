@@ -16,7 +16,7 @@ cd /opt/vehicle-api
 # Clone repository (if not already present)
 if [ ! -d ".git" ]; then
     echo "Cloning repository..."
-    git clone https://github.com/yourusername/ultimate-vehicle-data-api.git .
+    git clone https://github.com/jamier2007/ultimate-vehicle-data-api.git .
 fi
 
 # Build and start the container
